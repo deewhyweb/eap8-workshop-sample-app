@@ -20,7 +20,7 @@ public class ShoppingCartOrderProcessor  {
     @Inject
     private transient JMSContext context;
 
-    @Resource(lookup = "java:/topic/orders")
+    @Resource(lookup = "java:/orders")
     private Topic ordersTopic;
 
     
