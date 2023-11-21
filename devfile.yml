@@ -1,0 +1,208 @@
+schemaVersion: 2.2.0
+metadata:
+  name: jboss-workshop
+  namespace: user1-devspaces
+attributes:
+  controller.devfile.io/devworkspace-config:
+    name: devworkspace-config
+    namespace: devspaces
+  controller.devfile.io/storage-type: per-user
+components:
+  - container:
+      cpuRequest: 500m
+      endpoints:
+        - exposure: internal
+          name: postgresql
+          protocol: tcp
+          targetPort: 5432
+      env:
+        - name: POSTGRES_USER
+          value: postgresUser
+        - name: POSTGRES_PASSWORD
+          value: postgresPW
+        - name: POSTGRES_DB
+          value: postgresDB
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+      image: docker.io/library/postgres
+      memoryLimit: 500M
+      sourceMapping: /projects
+    name: postgres
+  - container:
+      command:
+        - /opt/jboss/jboss-eap-8/entrypoint-init-container.sh
+      cpuRequest: 500m
+      env:
+        - name: DOWNLOAD_PATH
+          value: http://download-server.artifacts.svc.cluster.local:8080/upload
+        - name: FILELIST
+          value: '["jboss-eap-7.4.0.zip", "jboss-eap-8.0.0.Beta-server-migration.zip", "jboss-eap-8.0.0.Beta.zip", "postgresql-42.6.0.jar", "mtr-1.1.0.GA-cli-offline.zip"]'
+      image: quay.io/hayesphilip/eapwip
+      memoryLimit: 1G
+      sourceMapping: /projects
+      volumeMounts:
+        - name: shared
+          path: /shared
+    name: installs
+  - container:
+      cpuRequest: 500m
+      endpoints:
+        - exposure: public
+          name: eap7
+          path: /
+          protocol: https
+          targetPort: 8180
+        - exposure: public
+          name: eap7-console
+          path: /
+          protocol: https
+          targetPort: 10090
+      env:
+        - name: FILE_PATH
+          value: http://download-server.artifacts.svc.cluster.local:8080/upload
+        - name: FILE_NAME
+          value: jboss-eap-7.4.0.zip
+        - name: FILE_FOLDER
+          value: jboss-eap-7.4
+        - name: OFFSET
+          value: '100'
+        - name: CONFIG
+          value: standalone-full.xml
+        - name: DEST
+          value: /shared
+        - name: CLUSTER_NAME
+          value: eap7
+      image: quay.io/hayesphilip/run-server
+      memoryLimit: 1G
+      sourceMapping: /projects
+      volumeMounts:
+        - name: shared
+          path: /shared
+    name: jboss-7
+  - container:
+      cpuRequest: 500m
+      endpoints:
+        - exposure: public
+          name: eap8
+          path: /
+          protocol: https
+          targetPort: 8280
+        - exposure: public
+          name: eap8-console
+          path: /
+          protocol: https
+          targetPort: 10190
+      env:
+        - name: FILE_PATH
+          value: http://download-server.artifacts.svc.cluster.local:8080/upload
+        - name: FILE_NAME
+          value: jboss-eap-8.0.0.Beta.zip
+        - name: FILE_FOLDER
+          value: jboss-eap-8.0
+        - name: OFFSET
+          value: '200'
+        - name: CONFIG
+          value: standalone-full.xml
+        - name: DEST
+          value: /shared
+        - name: CLUSTER_NAME
+          value: eap8
+      image: quay.io/hayesphilip/run-server
+      memoryLimit: 1G
+      sourceMapping: /projects
+      volumeMounts:
+        - name: shared
+          path: /shared
+    name: jboss-8
+  - attributes:
+      che-code.eclipse.org/contribute-cpuLimit: true
+      che-code.eclipse.org/contribute-cpuRequest: true
+      che-code.eclipse.org/contribute-endpoint/che-code: 3100
+      che-code.eclipse.org/contribute-endpoint/code-redirect-1: 13131
+      che-code.eclipse.org/contribute-endpoint/code-redirect-2: 13132
+      che-code.eclipse.org/contribute-endpoint/code-redirect-3: 13133
+      che-code.eclipse.org/contribute-entry-point: true
+      che-code.eclipse.org/contribute-memoryLimit: true
+      che-code.eclipse.org/contribute-memoryRequest: true
+      che-code.eclipse.org/contribute-volume-mount/checode: /checode
+      che-code.eclipse.org/contributed-container: quarkus-tools
+      che-code.eclipse.org/original-memoryLimit: 4G
+    container:
+      command:
+        - /checode/entrypoint-volume.sh
+      cpuRequest: 500m
+      endpoints:
+        - attributes:
+            contributed-by: che-code.eclipse.org
+            cookiesAuthEnabled: true
+            discoverable: false
+            type: main
+            urlRewriteSupported: true
+          exposure: public
+          name: che-code
+          path: '?tkn=eclipse-che'
+          protocol: https
+          secure: false
+          targetPort: 3100
+        - attributes:
+            contributed-by: che-code.eclipse.org
+            discoverable: false
+            urlRewriteSupported: true
+          exposure: public
+          name: code-redirect-1
+          protocol: http
+          targetPort: 13131
+        - attributes:
+            contributed-by: che-code.eclipse.org
+            discoverable: false
+            urlRewriteSupported: true
+          exposure: public
+          name: code-redirect-2
+          protocol: http
+          targetPort: 13132
+        - attributes:
+            contributed-by: che-code.eclipse.org
+            discoverable: false
+            urlRewriteSupported: true
+          exposure: public
+          name: code-redirect-3
+          protocol: http
+          targetPort: 13133
+        - exposure: public
+          name: jboss-admin
+          protocol: https
+          targetPort: 9990
+      env:
+        - name: EAP7_HOME
+          value: /shared/jboss-eap-7.4
+        - name: EAP8_HOME
+          value: /shared/jboss-eap-8.0
+        - name: MAVEN_CONFIG
+          value: /home/jboss/.m2
+        - name: QUARKUS_HTTP_HOST
+          value: 0.0.0.0
+      image: quay.io/openshiftlabs/quarkus-workshop-stack:2.15
+      memoryLimit: 5.07G
+      mountSources: true
+      sourceMapping: /projects
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+        - name: checode
+          path: /checode
+        - name: shared
+          path: /shared
+    name: workshop-tools
+  - name: m2
+    volume:
+      size: 1G
+  - name: shared
+    volume:
+      size: 50G
+commands:
+  - apply:
+      component: installs
+    id: init-install
+events:
+  preStart:
+    - init-install
