@@ -1,12 +1,6 @@
 schemaVersion: 2.2.0
 metadata:
   name: jboss-workshop
-  namespace: user1-devspaces
-attributes:
-  controller.devfile.io/devworkspace-config:
-    name: devworkspace-config
-    namespace: devspaces
-  controller.devfile.io/storage-type: per-user
 components:
   - container:
       cpuRequest: 500m
