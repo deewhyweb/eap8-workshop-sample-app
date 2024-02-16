@@ -13,6 +13,7 @@
         <maven.build.timestamp.format>yyyyMMdd'T'HHmmss</maven.build.timestamp.format>
         <project.encoding>UTF-8</project.encoding>
         <maven.test.skip>true</maven.test.skip>
+        <version.server.bom>8.0.0.GA-redhat-00009</version.server.bom>
     </properties>
     <repositories>
         <repository>
@@ -30,6 +31,9 @@
             <layout>default</layout>
         </repository>
     </repositories>
+
+<!-- TODO: Add plugin repositories here -->
+
        <dependencyManagement>
 
         <dependencies>
@@ -38,7 +42,7 @@
             <dependency>
                 <groupId>org.jboss.bom</groupId>
                 <artifactId>jboss-eap-ee-with-tools</artifactId>
-                <version>8.0.0.Beta-redhat-00004</version>
+                <version>${version.server.bom}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
